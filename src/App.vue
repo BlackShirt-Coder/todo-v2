@@ -1,26 +1,262 @@
+
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div class="container">
+        <div class="row" style="height: 200px;"></div>
+        <div class="row">
+            <div class="col-6 m-auto">
+                <div class="todo-list ">
+                    <div class="header d-flex">
+                        <i :class="{downBtn:allCompleted}" @click="completeAll()" class="bi bi-chevron-down ps-4 "></i>
+                        <input v-if="searchFeatures" type="text" class="input-text" v-model="search" placeholder="Search...">
+                        <input v-else type="text" @keyup.enter="addTodo()" v-model="input" class="input-text"
+                               placeholder="What needs to be done?" autocomplete="off">
+                        <div class="me-5 search-icon">
+                            <i @click="searchToggle()"  class="bi bi-search"></i>
+                        </div>
+                    </div>
+
+                    <ul>
+                        <li class="todo-item" v-for="(todo,index) in searchTodo" :key="todo.index">
+                            <div>
+                                <input @click="show(todo)" v-model="todo.completed" :id="index" :value="todo.task"
+                                       type="checkbox" style="margin-right: 10px;">
+                                <label @dblclick="editTodo(todo)" v-if="!todo.editing"
+                                       :class="{completed:todo.completed}"
+                                       :value="todo.task">{{todo.task}}</label>
+
+                                <input @keyup.esc="cancelEdit(todo)" v-focus @keyup.enter="doneEdit(todo)"
+                                       type="text" v-if="todo.editing" v-model="todo.task">
+
+                            </div>
+                            <div @click="removeTodo(index)" class="delete-btn text-danger">
+                                <i class="bi bi-x-lg pe-3" style="cursor: pointer;"></i>
+                            </div>
+                        </li>
+                        <li class=" px-3 py-1 d-flex justify-content-between footer">
+                            <div class="align-self-center item-left "><p class="mb-0">{{doneJob}} item left</p></div>
+                            <div class="align-self-center">
+                                <button @click="tasks='all'" class="active">All</button>
+                                <button @click="tasks='active'" filterTodos>Active</button>
+                                <button @click="tasks='completed'">Completed</button>
+                            </div>
+                            <div class="align-self-center">
+                                <button @click="clearCompleted()" v-if="filterCompleted">Clear Completed</button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+    const focus = {
+        mounted: (el) => el.focus()
+    };
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+    export default {
+        name: 'App',
+        data() {
+            return {
+                checked: [],
+                input: '',
+                search: '',
+                todoCache: '',
+                completed: false,
+                tasks: 'all',
+                searchFeatures: false,
+                todos: [
+                    {
+                        id: 1,
+                        task: 'Home Work',
+                        completed: false,
+                        editing: false,
+                    },
+                    {
+                        id: 2,
+                        task: 'Work Out',
+                        completed: false,
+                        editing: false,
+                    },
+                    {
+                        id: 3,
+                        task: 'Go Shopping',
+                        completed: false,
+                        editing: false
+
+                    },
+                ]
+            }
+        },
+        computed: {
+            doneJob() {
+                return this.todos.filter(todo => todo.completed === false).length;
+            },
+
+            allCompleted() {
+                return this.todos.filter(todo => todo.completed === false).length == 0;
+            },
+            filterTodos() {
+                if (this.tasks === 'active') {
+                    return this.todos.filter(todo => !todo.completed)
+                } else if (this.tasks === 'completed') {
+                    return this.todos.filter(todo => todo.completed);
+                }
+                return this.todos;
+            },
+            searchTodo(){
+                if(this.search.trim()!==''){
+                    if( this.filterTodos.filter(todo=>todo.task.toLowerCase().indexOf(this.search.toLowerCase()) !== -1)){
+                        return this.filterTodos.filter(todo=>todo.task.toLowerCase().indexOf(this.search.toLowerCase()) !== -1);
+                    }
+
+                }
+                return this.filterTodos;
+            },
+            filterCompleted() {
+                return this.todos.filter(todo => todo.completed === true).length > 0
+            }
+
+        },
+        methods: {
+            searchToggle(){
+                this.searchFeatures=!this.searchFeatures;
+
+            },
+            show(todo) {
+                todo.completed = !todo.completed;
+            },
+            addTodo() {
+                const newInput = {
+                    id: new Date().toISOString(),
+                    task: this.input,
+                    completed: false,
+                    editing: false,
+                };
+                this.todos.push(newInput);
+                this.input = '';
+                this.id++;
+
+            },
+            completeAll() {
+                this.completed = !this.completed;
+                if (this.completed == true) {
+                    this.todos.forEach(todo => todo.completed = true);
+                } else {
+                    this.todos.forEach(todo => todo.completed = false);
+
+                }
+
+            },
+            clearCompleted() {
+                this.todos = this.todos.filter(todo => !todo.completed);
+            },
+            cancelEdit(todo) {
+                todo.task = this.todoCache;
+                todo.editing = false;
+                console.log(todo);
+            },
+            removeTodo(id) {
+                // const id=todo.id;
+                // this.todos=this.todos.filter(todo=>todo.id!==id);
+                this.todos.splice(id, 1);
+
+            },
+            editTodo(todo) {
+                this.todoCache = todo.task;
+                this.todos.filter(todo => todo.editing = false);
+                todo.editing = !todo.editing;
+
+            },
+            doneEdit(todo) {
+                todo.editing = !todo.editing;
+            },
+
+
+        },
+        directives: {
+            focus
+
+        }
+    ,
+    components: {
+
+    }
+    }
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+
+    <style scoped>
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .todo-item {
+        border: 1px solid #e2e2e2;
+        padding: 12px 25px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .todo-list {
+        box-shadow: 0 0 14px 7px #dee2e6;
+    }
+
+    .input-text {
+        display: inline-block;
+        width: 100%;
+        border: none;
+        outline: none;
+        padding: 15px;
+    }
+
+    .bi-chevron-down {
+        color: #c2c2c2;
+        font-weight: bolder;
+        font-size: 25px;
+    }
+
+    .downBtn {
+        color: #333333 !important;
+        font-weight: bolder;
+        font-size: 25px;
+
+    }
+    .search-icon{
+        font-size: 20px;
+        color: #2e2e2e;
+    }
+    .footer button {
+        border: 1px solid white;
+        background: none;
+        outline: none;
+        margin: 0 5px;
+        color: #8b8b8b;
+    }
+
+    .footer button:hover {
+        border: 1px solid #dfdfdf;
+        border-radius: 3px;
+    }
+
+    .active {
+        border: 1px solid #dfdfdf !important;
+        border-radius: 3px;
+    }
+
+    .header {
+        justify-content: center;
+        align-items: center;
+        border-bottom: 2px solid #c2c2c2;
+
+    }
+
+    .completed {
+        text-decoration: line-through;
+    }
+
 </style>
