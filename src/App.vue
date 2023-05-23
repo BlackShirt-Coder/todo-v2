@@ -16,22 +16,7 @@
                     </div>
 
                     <ul>
-                        <li class="todo-item" v-for="(todo,index) in searchTodo" :key="todo.index">
-                            <div>
-                                <input @click="show(todo)" v-model="todo.completed" :id="index" :value="todo.task"
-                                       type="checkbox" style="margin-right: 10px;">
-                                <label @dblclick="editTodo(todo)" v-if="!todo.editing"
-                                       :class="{completed:todo.completed}"
-                                       :value="todo.task">{{todo.task}}</label>
-
-                                <input @keyup.esc="cancelEdit(todo)" v-focus @keyup.enter="doneEdit(todo)"
-                                       type="text" v-if="todo.editing" v-model="todo.task">
-
-                            </div>
-                            <div @click="removeTodo(index)" class="delete-btn text-danger">
-                                <i class="bi bi-x-lg pe-3" style="cursor: pointer;"></i>
-                            </div>
-                        </li>
+                        <todo-list v-model="todo.task"  @cancelEdit="cancelEdit(todo)"   @doneEdit="doneEdit(todo)"  @editTodo="editTodo(todo)"     @removeTodo="removeTodo(index)"   @todoShow="show(todo)"  v-for="(todo,index) in searchTodo" :key="todo.id" :todo="todo" :index="index"></todo-list>
                         <li class=" px-3 py-1 d-flex justify-content-between footer">
                             <div class="align-self-center item-left "><p class="mb-0">{{doneJob}} item left</p></div>
                             <div class="align-self-center">
@@ -52,12 +37,14 @@
 </template>
 
 <script>
-    const focus = {
-        mounted: (el) => el.focus()
-    };
+    import TodoList from './components/TodoList.vue';
 
     export default {
         name: 'App',
+        components:{
+            TodoList,
+
+        },
         data() {
             return {
                 checked: [],
@@ -129,15 +116,18 @@
                 todo.completed = !todo.completed;
             },
             addTodo() {
-                const newInput = {
-                    id: new Date().toISOString(),
-                    task: this.input,
-                    completed: false,
-                    editing: false,
-                };
-                this.todos.push(newInput);
-                this.input = '';
-                this.id++;
+               if(this.input.trim()!==''){
+                   const newInput = {
+                       id: new Date().toISOString(),
+                       task: this.input,
+                       completed: false,
+                       editing: false,
+                   };
+                   this.todos.push(newInput);
+                   this.input = '';
+                   this.id++;
+               }
+
 
             },
             completeAll() {
@@ -156,7 +146,7 @@
             cancelEdit(todo) {
                 todo.task = this.todoCache;
                 todo.editing = false;
-                console.log(todo);
+
             },
             removeTodo(id) {
                 // const id=todo.id;
@@ -165,6 +155,7 @@
 
             },
             editTodo(todo) {
+
                 this.todoCache = todo.task;
                 this.todos.filter(todo => todo.editing = false);
                 todo.editing = !todo.editing;
@@ -176,14 +167,9 @@
 
 
         },
-        directives: {
-            focus
 
-        }
-    ,
-    components: {
 
-    }
+
     }
 </script>
 
@@ -255,8 +241,6 @@
 
     }
 
-    .completed {
-        text-decoration: line-through;
-    }
+
 
 </style>
