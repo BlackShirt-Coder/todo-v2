@@ -20,13 +20,12 @@
                         <li class=" px-3 py-1 d-flex justify-content-between footer">
                             <div class="align-self-center item-left "><p class="mb-0">{{doneJob}} item left</p></div>
                             <div class="align-self-center">
-                                <button @click="tasks='all'" class="active">All</button>
-                                <button @click="tasks='active'" filterTodos>Active</button>
-                                <button @click="tasks='completed'">Completed</button>
+                             <todo-btn  @filterTask="type=>tasks=type" filterTodos  ></todo-btn>
                             </div>
                             <div class="align-self-center">
                                 <button @click="clearCompleted()" v-if="filterCompleted">Clear Completed</button>
                             </div>
+
                         </li>
                     </ul>
                 </div>
@@ -38,12 +37,13 @@
 
 <script>
     import TodoList from './components/TodoList.vue';
+    import TodoBtn from './components/TodoBtn.vue';
 
     export default {
         name: 'App',
         components:{
             TodoList,
-
+            TodoBtn
         },
         data() {
             return {
@@ -52,7 +52,7 @@
                 search: '',
                 todoCache: '',
                 completed: false,
-                tasks: 'all',
+                tasks: '',
                 searchFeatures: false,
                 todos: [
                     {
@@ -86,12 +86,16 @@
                 return this.todos.filter(todo => todo.completed === false).length == 0;
             },
             filterTodos() {
-                if (this.tasks === 'active') {
+                if (this.tasks ==='active') {
                     return this.todos.filter(todo => !todo.completed)
+
                 } else if (this.tasks === 'completed') {
                     return this.todos.filter(todo => todo.completed);
                 }
-                return this.todos;
+                  else{
+                  return this.todos;
+                }
+
             },
             searchTodo(){
                 if(this.search.trim()!==''){
@@ -115,6 +119,7 @@
             show(todo) {
                 todo.completed = !todo.completed;
             },
+
             addTodo() {
                if(this.input.trim()!==''){
                    const newInput = {
@@ -215,18 +220,6 @@
     .search-icon{
         font-size: 20px;
         color: #2e2e2e;
-    }
-    .footer button {
-        border: 1px solid white;
-        background: none;
-        outline: none;
-        margin: 0 5px;
-        color: #8b8b8b;
-    }
-
-    .footer button:hover {
-        border: 1px solid #dfdfdf;
-        border-radius: 3px;
     }
 
     .active {
